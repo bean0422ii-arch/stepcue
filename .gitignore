@@ -1,0 +1,23 @@
+# 가상환경, 파이썬 캐시
+.venv/
+__pycache__/
+*.pyc
+
+# 데이터 (용량 큼, 스크립트로 다운로드)
+data/raw/*
+!data/raw/.gitkeep
+
+# 실행 중 생성되는 로그 (시나리오 결과 로그는 제출 시 따로 추가)
+logs/*
+!logs/.gitkeep
+
+# 수업 자료 (교수님 저작물이라 공개 저장소에 올리지 않음)
+assets/
+IoT_Week_11_Claude_Code.md
+1주차 수업요약.md
+
+# 편집기, OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
