@@ -14,7 +14,7 @@
 - [x] Problem card 마무리 → [docs/problem_card.md](docs/problem_card.md)
 - [x] 1페이지 설계 작성(데이터, 이벤트, 에이전트 도구, 행동) → [docs/design.md](docs/design.md)
 - [x] Git 저장소 초기화, `.gitignore` 작성
-- [ ] GitHub 원격 저장소 연결 후 push
+- [x] GitHub 원격 저장소 연결 후 push → https://github.com/bean0422ii-arch/stepcue
 - [ ] 시스템 다이어그램 생성(슬라이드 12 프롬프트 활용) → `docs/`
 - [ ] AI 사용 기록 시작 → `docs/ai_use.md` (사용한 도구, 프롬프트, AI가 틀린 점)
 
