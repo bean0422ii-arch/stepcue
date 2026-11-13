@@ -16,7 +16,7 @@
 - [x] Git 저장소 초기화, `.gitignore` 작성
 - [x] GitHub 원격 저장소 연결 후 push → https://github.com/bean0422ii-arch/stepcue
 - [x] 시스템 다이어그램 생성 → [docs/figures/system_diagram.png](docs/figures/system_diagram.png) (슬라이드 12 프롬프트 채운 버전: [docs/diagram_prompt.md](docs/diagram_prompt.md))
-- [ ] AI 사용 기록 시작 → `docs/ai_use.md` (사용한 도구, 프롬프트, AI가 틀린 점)
+- [x] AI 사용 기록 시작 → [docs/ai_use.md](docs/ai_use.md) (사용한 도구, 프롬프트, AI가 틀린 점) — 매주 계속 추가
 
 **점검 산출물:** Problem card, 1페이지 설계, 다이어그램, 데이터 탐색 그래프
 
