@@ -7,7 +7,7 @@
 ---
 
 ## 11주차 (11/9 ~ 11/15): 주제 확정 · 데이터 이해
-- [ ] 교수님께 주제 이메일 보내기, **11/15(일) 오후 11:59까지** (mzislam@sejong.ac.kr) → [docs/email_draft.md](docs/email_draft.md)
+- [x] 교수님께 주제 이메일 보내기, **11/15(일) 오후 11:59까지** (mzislam@sejong.ac.kr) → [docs/email_draft.md](docs/email_draft.md)
 - [x] Daphnet FoG 데이터셋 다운로드 → `data/raw/` (UCI 저장소)
 - [x] 데이터 탐색: 환자별 레이블 분포(0 실험 외 / 1 정상 / 2 동결), 동결 구간 그래프 → [docs/data_summary.md](docs/data_summary.md)
 - [x] 동결이 없는 환자(S04, S10) 확인 → 오탐 테스트용으로 따로 표시
@@ -15,7 +15,7 @@
 - [x] 1페이지 설계 작성(데이터, 이벤트, 에이전트 도구, 행동) → [docs/design.md](docs/design.md)
 - [x] Git 저장소 초기화, `.gitignore` 작성
 - [x] GitHub 원격 저장소 연결 후 push → https://github.com/bean0422ii-arch/stepcue
-- [ ] 시스템 다이어그램 생성(슬라이드 12 프롬프트 활용) → `docs/`
+- [x] 시스템 다이어그램 생성 → [docs/figures/system_diagram.png](docs/figures/system_diagram.png) (슬라이드 12 프롬프트 채운 버전: [docs/diagram_prompt.md](docs/diagram_prompt.md))
 - [ ] AI 사용 기록 시작 → `docs/ai_use.md` (사용한 도구, 프롬프트, AI가 틀린 점)
 
 **점검 산출물:** Problem card, 1페이지 설계, 다이어그램, 데이터 탐색 그래프

@@ -3,6 +3,9 @@
 > 수업 요구: *one-page design: data, events, agent tools, actions*. 문제 정의는 [problem_card.md](problem_card.md) 참고.
 
 ## 0. 전체 구조
+![StepCue 시스템 다이어그램](figures/system_diagram.png)
+
+(다이어그램은 `scripts/make_diagram.py`로 생성. 아래는 텍스트 요약)
 ```
 [웨어러블 시뮬레이터] --stepcue/imu--> [엣지 노드] --stepcue/event--> [에이전트] --stepcue/action--> [대시보드]
  Daphnet 64Hz 재생                      윈도우·추론                       판단·도구 호출                Streamlit
