@@ -3,34 +3,15 @@
 실행: .venv\\Scripts\\python.exe src\\explore.py
 결과: docs/figures/*.png, docs/data_summary.md
 """
-from pathlib import Path
-
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT / "data" / "raw" / "dataset_fog_release" / "dataset"
+from data import FS, ROOT, load_all
+
 FIG_DIR = ROOT / "docs" / "figures"
-FS = 64  # Hz
-
-COLUMNS = ["time_ms",
-           "ankle_x", "ankle_y", "ankle_z",    # 발목(정강이)
-           "thigh_x", "thigh_y", "thigh_z",    # 허벅지
-           "trunk_x", "trunk_y", "trunk_z",    # 몸통(허리)
-           "label"]                            # 0 실험 외 / 1 정상 / 2 동결
-
-
-def load_all() -> pd.DataFrame:
-    frames = []
-    for f in sorted(DATA_DIR.glob("S*R*.txt")):
-        df = pd.read_csv(f, sep=" ", header=None, names=COLUMNS)
-        df["subject"] = f.stem[:3]
-        df["run"] = f.stem[3:]
-        frames.append(df)
-    return pd.concat(frames, ignore_index=True)
 
 
 def freeze_episodes(df_run: pd.DataFrame) -> list[float]:

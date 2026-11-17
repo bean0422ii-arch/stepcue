@@ -8,11 +8,12 @@
 ```
 data/raw/     Daphnet 원본 데이터 (git에 올리지 않음)
 models/       학습된 모델 (.onnx)
-src/          simulator.py, features.py, train.py, edge_node.py, agent.py
+src/          data.py, features.py, train.py, cadence.py, simulator.py (+ edge_node.py, agent.py 예정)
+scripts/      download_data.py, make_diagram.py
 dashboard/    Streamlit 앱 (app.py)
 scenarios/    테스트 시나리오 3개
 logs/         decisions.jsonl (에이전트 결정 로그)
-docs/         problem_card.md, design.md, ai_use.md, email_draft.md
+docs/         problem_card.md, design.md, model_results.md, cadence.md, ai_use.md
 assets/       수업 슬라이드 이미지
 ```
 

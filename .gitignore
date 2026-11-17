@@ -21,3 +21,6 @@ IoT_Week_11_Claude_Code.md
 .idea/
 Thumbs.db
 desktop.ini
+
+# 전처리 결과 (features.py로 다시 생성)
+data/processed/

@@ -21,15 +21,18 @@
 **점검 산출물:** Problem card, 1페이지 설계, 다이어그램, 데이터 탐색 그래프
 
 ## 12주차 (11/16 ~ 11/22): 모델
-- [ ] `src/features.py`: 2초 윈도우(0.5초 간격) 분할, Freeze Index, 통계 특징 약 10개
-- [ ] 베이스라인: Freeze Index에 임계값 적용 → 민감도, 특이도, F1
-- [ ] `src/train.py`: RandomForest 또는 작은 MLP 학습, 환자 단위 교차검증(LOSO)
-- [ ] 베이스라인과 모델 성능 비교표 작성
-- [ ] 걸음 속도(cadence) 추정: 발목 가속도 피크 간격 → 환자별 분당 걸음 수 표
-- [ ] `scripts/download_data.py`: Daphnet 자동 다운로드 (README 명령어 줄이기용)
-- [ ] `src/simulator.py`: 녹화 데이터를 64Hz 실시간처럼 재생(아직 MQTT 없이 콘솔 출력)
+- [x] `src/features.py`: 2초 윈도우(0.5초 간격) 분할, Freeze Index, 특징 10개 (공통 로더 `src/data.py` 분리)
+- [x] 베이스라인: Freeze Index에 임계값 적용 → 민감도, 특이도, F1
+- [x] `src/train.py`: RandomForest(트리 20개, 깊이 6, 437KB) 학습, 환자 단위 교차검증(LOSO), 임계값 0.8
+- [x] 베이스라인과 모델 성능 비교표 작성 → [docs/model_results.md](docs/model_results.md)
+  - 에피소드 감지율 80.2%, 감지 지연 중앙값 1.05초, **S04·S10 오탐 10분당 4.6회 (목표 1회 이하 미달 → 14주차 에이전트 조건으로 줄이기)**
+- [x] 걸음 속도(cadence) 추정: 피크 간격 대신 자기상관(보폭 주기) → 환자별 95~130걸음/분 → [docs/cadence.md](docs/cadence.md)
+- [x] `scripts/download_data.py`: Daphnet 자동 다운로드 (README 명령어 줄이기용)
+- [x] `src/simulator.py`: 녹화 데이터를 64Hz 실시간처럼 재생(콘솔 출력, `--infer`로 동결 확률·추론 시간 1.5ms 표시)
 
 **점검 산출물:** 성능표, 동작하는 시뮬레이터
+
+점검 때 시연 명령: `.venv\Scripts\python.exe src\simulator.py --subject S01 --run R01 --start 1130 --duration 20 --infer` (1140초 부근 동결)
 
 ## 13주차 (11/23 ~ 11/29): 엣지 파이프라인
 - [ ] MQTT 브로커 실행 (Mosquitto 별도 설치 대신 파이썬 브로커로 대체 가능한지 검토, README 명령어 수 때문)
