@@ -40,6 +40,7 @@ From body-worn accelerometer data (2-second windows, updated every 0.5 s):
 The agent has two layers:
 1. **Fast edge layer (rule-based, < 1 s, works offline):** starts a metronome cue at the person's own cadence, slows it to 90% and adds vibration if freezing continues for 3 s, stops the cue on recovery, notifies the caregiver if freezing lasts over 10 s or happens 3+ times in 10 minutes, and does nothing when the stop looks intentional. Every decision is logged with its inputs and reason.
 2. **Slow LLM layer (Claude, outside the real-time loop):** after a session, it reads a summary of the decision log (never raw sensor data), uses tools to re-run the detector on recorded data with different thresholds, and personalizes the detection threshold to reduce false cues for that user.
+3. **Learning from feedback:** the dashboard has a "Wrong cue" button. Each press is logged with the context (FoG probability, walking rhythm, cadence). The LLM agent reads this feedback, finds common patterns (e.g., false cues right after turning), saves them as a per-user memory, and proposes new settings. The effect of every change is recorded (before/after false cues per 10 minutes).
 
 **When it asks a human first:** small threshold changes within a safe range (0.6–0.9) are applied automatically with a written reason; larger changes, or changes outside the range, are sent to the user/caregiver for approval on the dashboard.
 
