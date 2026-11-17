@@ -2,6 +2,7 @@
 
 > `IoT_Project_Registration_Form.docx`의 각 칸에 그대로 복사해서 넣는다.
 > `[ ]` 칸(이름, 학번, 이메일, 서명, 날짜)은 직접 채운다. 개인 정보는 이 파일에 적지 않는다.
+> Word에 붙여넣을 때 깨지지 않도록 본문에는 백틱(`)을 쓰지 않는다. 한국어 확인용: [milestone1_form_ko.md](milestone1_form_ko.md)
 
 ---
 
@@ -30,11 +31,11 @@ People with Parkinson's disease often experience freezing of gait (FoG): while w
 
 **What will your system detect?**
 From body-worn accelerometer data (2-second windows, updated every 0.5 s):
-- `fog_onset`: freezing starts while the person was walking
-- `fog_prolonged`: freezing lasts more than 3 s (cue not working) or more than 10 s (fall risk)
-- `fog_recovered`: normal walking resumes
-- `intentional_stop`: the person stopped on purpose (no rhythmic walking before) → no action
-- `walking_cadence`: the person's own steps per minute, used as the cue tempo
+- fog_onset: freezing starts while the person was walking
+- fog_prolonged: freezing lasts more than 3 s (cue not working) or more than 10 s (fall risk)
+- fog_recovered: normal walking resumes
+- intentional_stop: the person stopped on purpose (no rhythmic walking before) → no action
+- walking_cadence: the person's own steps per minute, used as the cue tempo
 
 **What will the agent do?**
 The agent has two layers:
@@ -55,7 +56,7 @@ The agent has two layers:
 ## 6. AI tools to be used
 **Tools for building:** ☑ Claude (Claude Code)
 
-**LLM inside your agent:** Anthropic Claude API (model: Claude Opus 5.5, `claude-opus-5-5`), called with tool use only by the slow calibration layer. The real-time cueing runs locally without any LLM, so the system keeps working if the network is down.
+**LLM inside your agent:** Anthropic Claude API (model: Claude Opus 5.5, claude-opus-5-5), called with tool use only by the slow calibration layer. The real-time cueing runs locally without any LLM, so the system keeps working if the network is down.
 
 **What AI will help with:** ☑ Writing code ☑ Debugging ☑ Agent prompts and design ☑ Slides and report
 (Synthetic data: not used)
