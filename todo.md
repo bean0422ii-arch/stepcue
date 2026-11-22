@@ -37,7 +37,7 @@
 ## 13주차 (11/23 ~ 11/29): 엣지 파이프라인 + 개인 보정 실험 (B)
 > 12주차 한계: 모든 환자에게 같은 임계값 0.8 → S04·S10 오탐 10분당 4.6회. 개인 보정으로 줄일 수 있는지 먼저 검증한다.
 
-- [ ] **Milestone 1 제출:** Project Registration Form 작성·업로드 → [docs/milestone1_form.md](docs/milestone1_form.md) (이름·학번·이메일·서명은 직접)
+- [x] **Milestone 1 제출 완료:** Project Registration Form 작성·업로드 → [docs/milestone1_form.md](docs/milestone1_form.md) (이름·학번·이메일·서명은 직접)
 - [x] **[B] `src/calibrate.py`: 개인 보정 실험** → [docs/calibration_results.md](docs/calibration_results.md)
   - 환자마다 앞부분 2·5분 정상 윈도우 확률의 95%/99%/최댓값을 개인 임계값으로 → 나머지 데이터로 고정 0.8과 비교
   - **결과: 효과 없음 → 접음.** 6개 규칙 모두 고정 0.8보다 나쁨. S04·S10 임계값이 오히려 0.8 아래로 내려가 오탐 증가, 오탐을 줄인 규칙은 감지율 18%
@@ -50,7 +50,10 @@
 - [x] 모델을 ONNX로 변환, 모델 크기(KB)와 윈도우당 추론 시간(ms) 측정 → [docs/edge_metrics.md](docs/edge_metrics.md)
   - `src/export_onnx.py`: 437KB → **70KB**, 추론 1.08ms → **0.016ms**, 4만 윈도우 판단 100% 일치
   - 엣지 노드가 ONNX 사용(`src/onnx_model.py`). 실시간 센서→판단 2~4ms
-- [ ] 클라우드 지연 비교 실험: 인위적 지연 200~800ms 넣은 경로와 반응 시간 비교 그래프
+- [x] 클라우드 지연 비교 실험: 인위적 지연 200~800ms 넣은 경로와 반응 시간 비교 그래프 → [docs/cloud_latency.md](docs/cloud_latency.md)
+  - `src/cloud_latency.py`: 237개 에피소드, 엣지 3ms vs 클라우드 200~800ms
+  - 반응 시간 1.06초 → 1.85초(800ms), 동결 중 큐 도착 77% → 69%, **3초 이하 짧은 동결 53% → 29%**
+  - 전송량: 원시 7.6KB/s vs 요약 0.35KB/s (약 22분의 1) → 실시간 판단은 엣지, LLM 분석은 클라우드
 - [ ] design.md 갱신: 두 단계 에이전트 구조(빠른 엣지 규칙 + 느린 LLM 에이전트), 다이어그램에 LLM 추가
 
 **점검 산출물:** 실시간 엣지 추론 데모, 엣지 지표표와 그래프, 개인 보정 실험 결과
