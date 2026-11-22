@@ -1,4 +1,6 @@
-"""13주차: 엣지 노드. `stepcue/imu`를 구독 -> 2초 윈도우 -> 특징 추출 -> 모델 추론 -> `stepcue/event` 발행.
+"""13주차: 엣지 노드. `stepcue/imu`를 구독 -> 2초 윈도우 -> 특징 추출 -> ONNX 모델 추론 -> `stepcue/event` 발행.
+
+모델은 models/rf.onnx (onnxruntime으로 실행, scikit-learn 불필요. 만들기: src/export_onnx.py)
 
 원시 가속도는 엣지 안에서만 쓰고, 밖으로는 0.5초마다 요약(확률, 걷기 여부, 걸음 속도)만 내보낸다.
 임계값은 config/user.json에서 읽고, 파일이 바뀌면 다시 읽는다(14주차 LLM 에이전트가 바꿀 수 있게).
@@ -10,7 +12,6 @@
    "walking": false, "rhythm": 0.21, "cadence": null, "infer_ms": 1.4, "latency_ms": 2.1, "truth": 2}
 """
 import json
-import pickle
 import time
 from collections import deque
 
@@ -20,16 +21,14 @@ from cadence import MIN_RHYTHM, SEG, rhythm
 from data import FS, ROOT
 from features import STEP, WIN, extract
 from mqtt_common import TOPIC_EVENT, TOPIC_IMU, connect
+from onnx_model import load_session, predict_prob
 
-MODEL_PATH = ROOT / "models" / "rf.pkl"
 CONFIG_PATH = ROOT / "config" / "user.json"
 
 
 class EdgeNode:
     def __init__(self):
-        with open(MODEL_PATH, "rb") as f:
-            self.clf = pickle.load(f)
-        self.clf.n_jobs = 1                    # 윈도우 1개씩 예측할 때는 1코어가 빠름 (19ms -> 1.5ms)
+        self.sess = load_session()
         self.cfg, self.cfg_mtime = {}, 0.0
         self.reload_config()
         self.reset()
@@ -57,12 +56,12 @@ class EdgeNode:
         self.reload_config()
         t1 = time.perf_counter()
         acc = np.asarray(self.buf)
-        prob = float(self.clf.predict_proba(extract(acc[-WIN:]))[0, 1])
+        prob = float(predict_prob(self.sess, extract(acc[-WIN:]))[0])
+        infer_ms = (time.perf_counter() - t1) * 1000          # 특징 추출 + 모델 추론
         self.probs.append(prob)
         avg = float(np.mean(self.probs))
         stride, r = rhythm(acc[:, :3]) if len(acc) >= 4 * FS else (np.nan, 0.0)   # 4초 이상 쌓인 뒤 계산
         walking = r >= MIN_RHYTHM
-        infer_ms = (time.perf_counter() - t1) * 1000
 
         return {"t": s["t"], "fog_prob": round(prob, 3), "prob_avg": round(avg, 3),
                 "fog": avg >= self.cfg["threshold"], "threshold": self.cfg["threshold"],

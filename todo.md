@@ -47,7 +47,9 @@
 - [x] 시뮬레이터 → `stepcue/imu` 발행 (`--mqtt`, 재생 시작 때 `reset` 메시지)
 - [x] `src/edge_node.py`: 구독 → 윈도우 → 추론 → `stepcue/event` 발행 (임계값은 `config/user.json`에서 읽고 파일이 바뀌면 다시 읽음)
   - 확인(11/22): S01 1128~1150초 22초 재생, 실제 22.0초. 윈도우 처리(추론+걸음 리듬) 2~3ms, 센서→판단 지연 3~4ms. Mosquitto(1883)·amqtt(1884) 둘 다 동작
-- [ ] 모델을 ONNX로 변환, 모델 크기(KB)와 윈도우당 추론 시간(ms) 측정
+- [x] 모델을 ONNX로 변환, 모델 크기(KB)와 윈도우당 추론 시간(ms) 측정 → [docs/edge_metrics.md](docs/edge_metrics.md)
+  - `src/export_onnx.py`: 437KB → **70KB**, 추론 1.08ms → **0.016ms**, 4만 윈도우 판단 100% 일치
+  - 엣지 노드가 ONNX 사용(`src/onnx_model.py`). 실시간 센서→판단 2~4ms
 - [ ] 클라우드 지연 비교 실험: 인위적 지연 200~800ms 넣은 경로와 반응 시간 비교 그래프
 - [ ] design.md 갱신: 두 단계 에이전트 구조(빠른 엣지 규칙 + 느린 LLM 에이전트), 다이어그램에 LLM 추가
 

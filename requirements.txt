@@ -6,3 +6,5 @@ scikit-learn
 tabulate
 paho-mqtt
 amqtt
+skl2onnx
+onnxruntime
