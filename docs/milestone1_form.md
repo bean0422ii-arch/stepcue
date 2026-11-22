@@ -53,6 +53,8 @@ The agent has two layers:
 
 **Type of data:** ☑ Open dataset
 
+**Limitation:** The data is pre-recorded, so the people in it do not react to our cues. Whether we play a cue or change its tempo, the recorded movement stays the same. This means the project cannot test whether a cue actually shortens a freezing episode, or which tempo works better. Instead, we evaluate the parts the system decides on its own: reaction time, detection rate, false cues per 10 minutes, and whether the cue tempo matches the person's cadence. The "Wrong cue" feedback is used to reduce unnecessary cues; it does not measure how well a cue helps. Testing the real effect (e.g., logging the time from cue start to walking again) is left as future work with a wearable device and real users.
+
 ## 6. AI tools to be used
 **Tools for building:** ☑ Claude (Claude Code)
 
