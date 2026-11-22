@@ -38,10 +38,11 @@
 > 12주차 한계: 모든 환자에게 같은 임계값 0.8 → S04·S10 오탐 10분당 4.6회. 개인 보정으로 줄일 수 있는지 먼저 검증한다.
 
 - [ ] **Milestone 1 제출:** Project Registration Form 작성·업로드 → [docs/milestone1_form.md](docs/milestone1_form.md) (이름·학번·이메일·서명은 직접)
-- [ ] **[B] `src/calibrate.py`: 개인 보정 실험**
-  - 환자마다 정상 걷기 앞부분 N분(예: 2, 5분)의 확률로 개인 임계값 계산 → 나머지 데이터로 평가
-  - 고정 0.8과 비교: 에피소드 감지율, 감지 지연, S04·S10 오탐(10분당) → `docs/calibration_results.md`
-  - **효과 없으면 기록만 남기고 접기** (LLM 에이전트는 다른 도구로 진행)
+- [x] **[B] `src/calibrate.py`: 개인 보정 실험** → [docs/calibration_results.md](docs/calibration_results.md)
+  - 환자마다 앞부분 2·5분 정상 윈도우 확률의 95%/99%/최댓값을 개인 임계값으로 → 나머지 데이터로 고정 0.8과 비교
+  - **결과: 효과 없음 → 접음.** 6개 규칙 모두 고정 0.8보다 나쁨. S04·S10 임계값이 오히려 0.8 아래로 내려가 오탐 증가, 오탐을 줄인 규칙은 감지율 18%
+  - 교훈: 오탐은 사람별 기준선 차이가 아니라 **특정 상황**에서 생김 → 14주차 "직전 걷기" 조건과 피드백 상황 분석으로 해결. 임계값은 0.8 유지
+  - LOSO 확률은 `data/processed/loso_scores.csv.gz`에 저장 (14주차 `simulate_threshold`에서 재사용)
 - [x] MQTT 브로커: `src/broker.py` (파이썬 amqtt, Mosquitto 설치 불필요). 이미 Mosquitto가 1883에서 실행 중이면 그것을 사용. 포트는 환경변수 `STEPCUE_MQTT_PORT`로 변경 가능
 - [x] 시뮬레이터 → `stepcue/imu` 발행 (`--mqtt`, 재생 시작 때 `reset` 메시지)
 - [x] `src/edge_node.py`: 구독 → 윈도우 → 추론 → `stepcue/event` 발행 (임계값은 `config/user.json`에서 읽고 파일이 바뀌면 다시 읽음)
@@ -62,7 +63,7 @@
 
 ### 느린 층: LLM 보정 에이전트 (A, Claude API, 실시간 경로 밖)
 - [ ] `src/llm_agent.py`: 세션이 끝난 뒤(또는 대시보드 버튼) 실행. 원시 가속도는 보내지 않고 **결정 로그 요약만** 보냄
-- [ ] 도구: `get_log_summary()`, `get_feedback()`, `run_calibration(minutes)`, `simulate_threshold(thr)`(재생해서 감지율·오탐 추정), `set_threshold(thr, reason)`, `request_approval(msg)`, `update_memory(note)`
+- [ ] 도구: `get_log_summary()`, `get_feedback()`, `simulate_threshold(thr)`(재생해서 감지율·오탐 추정), `set_threshold(thr, reason)`, `request_approval(msg)`, `update_memory(note)`
 - [ ] **오탐 피드백으로 학습하는 순환**
   - 대시보드 **"잘못된 큐였어요" 버튼** → `logs/feedback.jsonl`에 기록 (시각, 그때 확률, 걷기 리듬, 걸음 속도, 직전 행동)
   - LLM 에이전트가 피드백을 읽고 공통점을 찾음 (예: 방향 전환 직후, 걷기 리듬이 약할 때) → 임계값 조정 제안 + `config/user_memory.json`에 사용자별 패턴 메모 저장 → 다음 실행 때 메모를 먼저 읽고 판단
