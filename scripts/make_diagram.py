@@ -17,7 +17,7 @@ WEAR = ("#E3F0FB", "#5B8DB8")
 EDGE = ("#E6F4EA", "#4E9A6B")
 AGENT = ("#FFF1E0", "#D08A3C")
 OUTP = ("#F1E8F7", "#8E6BB0")
-CLOUD = ("#F4F4F4", "#9A9A9A")
+LLM = ("#FDF3E7", "#B5651D")
 INK = "#2B2B2B"
 SUB = "#5F5F5F"
 
@@ -86,17 +86,17 @@ def main():
     group(ax, 3.75, 2.0, 4.5, 6.1, EDGE, "Edge node (laptop)")
     box(ax, 4.05, 5.75, 3.9, 1.15, EDGE, "Windowing",
         "2 s window · 0.5 s hop", fill="white")
-    box(ax, 4.05, 4.25, 3.9, 1.2, EDGE, "Features",
-        "Freeze Index (3–8 / 0.5–3 Hz)\ncadence · energy · variance", fill="white")
-    box(ax, 4.05, 2.75, 3.9, 1.2, EDGE, "FoG model (ONNX)",
-        "RandomForest / small MLP\n→ fog_prob per window", fill="white")
+    box(ax, 4.05, 4.25, 3.9, 1.2, EDGE, "Features (10)",
+        "Freeze Index · band power · dominant freq\n+ walking rhythm & cadence (last 10 s)", fill="white")
+    box(ax, 4.05, 2.75, 3.9, 1.2, EDGE, "FoG model (ONNX, 70 KB)",
+        "RandomForest, 20 trees\nfog_prob ≥ threshold (config/user.json)", fill="white")
     arrow(ax, (6.0, 5.75), (6.0, 5.45))
     arrow(ax, (6.0, 4.25), (6.0, 3.95))
-    ax.text(6.0, 2.35, "measured: model size (KB) · latency (ms / window)",
+    ax.text(6.0, 2.35, "measured: 0.07 ms / window · sensor → decision 2–4 ms",
             ha="center", va="center", fontsize=8.2, color=EDGE[1], style="italic")
 
-    # ── 3. Agent ─────────────────────────────────────────────
-    group(ax, 9.05, 2.0, 4.0, 6.1, AGENT, "Agent")
+    # ── 3. Agent (fast layer) ────────────────────────────────
+    group(ax, 9.05, 2.0, 4.0, 6.1, AGENT, "Agent: fast layer (< 1 s)")
     box(ax, 9.3, 5.75, 3.5, 1.15, AGENT, "Context check",
         "walking in last 5 s?  episode length?", fill="white")
     box(ax, 9.3, 4.25, 3.5, 1.2, AGENT, "State machine",
@@ -134,17 +134,21 @@ def main():
     box(ax, 4.05, 7.0, 3.9, 0.5, ("#FFFFFF", "#4E9A6B"),
         "Raw IMU never leaves the edge", title_size=9.5, lw=1.6, radius=0.12, z=6)
 
-    # ── 클라우드 비교 경로 ───────────────────────────────────
-    box(ax, 5.0, 0.2, 6.0, 1.05, CLOUD, "Cloud baseline (for comparison)",
-        "same model + artificial delay 200–800 ms", dashed=True, title_size=10)
-    arrow(ax, (4.6, 2.0), (5.0, 0.75), color=CLOUD[1], dashed=True, rad=0.2)
-    arrow(ax, (11.0, 0.75), (11.4, 2.0), color=CLOUD[1], dashed=True, rad=0.2)
-    ax.text(13.0, 0.72, "compare: detection → cue time\n(goal: < 1 s at the edge)",
-            ha="center", va="center", fontsize=8.4, color=SUB)
+    # ── 느린 층: LLM 보정 에이전트 (실시간 경로 밖) ─────────────
+    box(ax, 5.2, 0.15, 7.4, 1.45, LLM,
+        "Agent: slow layer — LLM calibration (Claude API, after each session)",
+        "reads log summaries + \"Wrong cue\" feedback (never raw IMU) → finds patterns\n"
+        "simulate_threshold() · set_threshold() · request_approval() · update_memory()",
+        dashed=True, title_size=10, body_size=8.4, fill="white")
+    arrow(ax, (14.8, 2.8), (12.6, 0.95), color=LLM[1], dashed=True, rad=-0.25,
+          label="decisions.jsonl\nfeedback.jsonl", label_xy=(14.35, 1.0), fs=8)
+    arrow(ax, (5.2, 0.95), (4.6, 2.75), color=LLM[1], dashed=True, rad=-0.3,
+          label="new threshold\n(human approval\nif large)", label_xy=(3.55, 1.25), fs=8)
 
-    # MQTT 범례
-    ax.text(0.3, 0.72, "All links use MQTT\n(local broker)", ha="left",
-            va="center", fontsize=8.4, color=SUB)
+    # 범례·클라우드 비교 결과
+    ax.text(0.3, 0.45, "All links: MQTT (local broker)\n"
+            "Cloud path test (+200–800 ms):\ncue 1.06 s → 1.85 s", ha="left",
+            va="center", fontsize=8.2, color=SUB)
 
     for ext in ("png", "svg"):
         fig.savefig(OUT / f"system_diagram.{ext}", dpi=160, bbox_inches="tight",
