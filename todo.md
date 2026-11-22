@@ -42,9 +42,10 @@
   - 환자마다 정상 걷기 앞부분 N분(예: 2, 5분)의 확률로 개인 임계값 계산 → 나머지 데이터로 평가
   - 고정 0.8과 비교: 에피소드 감지율, 감지 지연, S04·S10 오탐(10분당) → `docs/calibration_results.md`
   - **효과 없으면 기록만 남기고 접기** (LLM 에이전트는 다른 도구로 진행)
-- [ ] MQTT 브로커 실행 (Mosquitto 별도 설치 대신 파이썬 브로커로 대체 가능한지 검토, README 명령어 수 때문)
-- [ ] 시뮬레이터 → `stepcue/imu` 발행
-- [ ] `src/edge_node.py`: 구독 → 윈도우 → 추론 → `stepcue/event` 발행 (임계값은 설정 파일 `config/user.json`에서 읽기 → 에이전트가 바꿀 수 있게)
+- [x] MQTT 브로커: `src/broker.py` (파이썬 amqtt, Mosquitto 설치 불필요). 이미 Mosquitto가 1883에서 실행 중이면 그것을 사용. 포트는 환경변수 `STEPCUE_MQTT_PORT`로 변경 가능
+- [x] 시뮬레이터 → `stepcue/imu` 발행 (`--mqtt`, 재생 시작 때 `reset` 메시지)
+- [x] `src/edge_node.py`: 구독 → 윈도우 → 추론 → `stepcue/event` 발행 (임계값은 `config/user.json`에서 읽고 파일이 바뀌면 다시 읽음)
+  - 확인(11/22): S01 1128~1150초 22초 재생, 실제 22.0초. 윈도우 처리(추론+걸음 리듬) 2~3ms, 센서→판단 지연 3~4ms. Mosquitto(1883)·amqtt(1884) 둘 다 동작
 - [ ] 모델을 ONNX로 변환, 모델 크기(KB)와 윈도우당 추론 시간(ms) 측정
 - [ ] 클라우드 지연 비교 실험: 인위적 지연 200~800ms 넣은 경로와 반응 시간 비교 그래프
 - [ ] design.md 갱신: 두 단계 에이전트 구조(빠른 엣지 규칙 + 느린 LLM 에이전트), 다이어그램에 LLM 추가

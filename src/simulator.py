@@ -1,13 +1,15 @@
-"""12주차: 웨어러블 시뮬레이터. 녹화된 Daphnet 데이터를 64Hz 실시간처럼 재생한다.
+"""웨어러블 시뮬레이터. 녹화된 Daphnet 데이터를 64Hz 실시간처럼 재생한다.
 
-13주차에는 replay()가 내보내는 샘플을 MQTT `stepcue/imu`로 발행한다. 지금은 콘솔 출력만.
+- 12주차: 콘솔 출력 (--infer로 동결 확률 미리보기)
+- 13주차: --mqtt 로 샘플마다 `stepcue/imu`에 발행 -> 엣지 노드(src/edge_node.py)가 받아서 추론
 
 실행 예시
-  .venv\\Scripts\\python.exe src\\simulator.py --subject S01 --run R01 --start 60 --duration 30
-  .venv\\Scripts\\python.exe src\\simulator.py --subject S01 --run R01 --start 60 --duration 30 --infer
-  (--speed 4 : 4배속, --infer : 2초 윈도우마다 학습한 모델로 동결 확률 출력. 13주차 엣지 노드 미리보기)
+  .venv\\Scripts\\python.exe src\\simulator.py --subject S01 --run R01 --start 1130 --duration 20 --infer
+  .venv\\Scripts\\python.exe src\\simulator.py --subject S01 --run R01 --start 1130 --duration 20 --mqtt
+  (--speed 4 : 4배속, --duration 0 : 끝까지)
 """
 import argparse
+import json
 import pickle
 import time
 from collections import deque
@@ -51,7 +53,15 @@ def main():
     ap.add_argument("--duration", type=float, default=30.0, help="재생 길이(초), 0이면 끝까지")
     ap.add_argument("--speed", type=float, default=1.0, help="재생 배속")
     ap.add_argument("--infer", action="store_true", help="모델로 동결 확률 계산(models/rf.pkl 필요)")
+    ap.add_argument("--mqtt", action="store_true", help="샘플을 MQTT stepcue/imu로 발행(브로커 필요)")
     a = ap.parse_args()
+
+    client = None
+    if a.mqtt:
+        from mqtt_common import TOPIC_IMU, connect
+        client = connect("simulator")
+        # 새 재생 시작을 알림 -> 엣지 노드가 이전 버퍼를 비운다
+        client.publish(TOPIC_IMU, json.dumps({"reset": True, "source": f"{a.subject}{a.run}"}), qos=1)
 
     clf = None
     if a.infer:
@@ -63,8 +73,13 @@ def main():
     print(f"재생: {a.subject}{a.run}, {a.start}초부터 {a.duration or '끝'}초, {a.speed}배속")
     n, t_wall = 0, time.perf_counter()
     for n, s in enumerate(replay(a.subject, a.run, a.start, a.duration or None, a.speed), start=1):
+        if client is not None:
+            # sent: 보낸 실제 시각 -> 엣지가 "센서 -> 판단" 지연을 계산. label은 평가용(엣지 판단에는 안 씀)
+            client.publish(TOPIC_IMU, json.dumps({**s, "sent": time.time()}))
         buf.append(s["acc"])
         if n % STEP:                                   # 0.5초(32샘플)마다 한 줄 출력
+            continue
+        if client is not None and n % (2 * FS):        # MQTT 모드는 2초마다만 출력(엣지 화면이 주인공)
             continue
         ankle = np.linalg.norm(s["acc"][:3])
         line = f"t={s['t']:7.2f}s  발목|a|={ankle:6.0f}mg  정답={LABEL_TEXT[s['label']]}"
@@ -77,6 +92,9 @@ def main():
 
     elapsed = time.perf_counter() - t_wall
     print(f"샘플 {n}개, 실제 걸린 시간 {elapsed:.1f}초 (기대 {n / FS / a.speed:.1f}초)")
+    if client is not None:
+        client.disconnect()        # 남은 메시지를 보낸 뒤 연결 종료
+        client.loop_stop()
 
 
 if __name__ == "__main__":
