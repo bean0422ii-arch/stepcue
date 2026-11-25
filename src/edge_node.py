@@ -1,4 +1,7 @@
 """13주차: 엣지 노드. `stepcue/imu`를 구독 -> 2초 윈도우 -> 특징 추출 -> ONNX 모델 추론 -> `stepcue/event` 발행.
+14주차: 같은 프로세스에서 빠른 층 에이전트(src/agent.py)가 이벤트마다 판단 -> 행동을 `stepcue/action`으로 발행.
+  에이전트를 MQTT 너머가 아니라 엣지 안에서 직접 호출하므로, 브로커가 끊겨도 판단·큐·기록은 계속된다.
+  판단 기록: logs/decisions.jsonl
 
 모델은 models/rf.onnx (onnxruntime으로 실행, scikit-learn 불필요. 만들기: src/export_onnx.py)
 
@@ -18,9 +21,10 @@ from collections import deque
 import numpy as np
 
 from cadence import MIN_RHYTHM, SEG, rhythm
+from agent import Agent
 from data import FS, ROOT
 from features import STEP, WIN, extract
-from mqtt_common import TOPIC_EVENT, TOPIC_IMU, connect
+from mqtt_common import TOPIC_ACTION, TOPIC_EVENT, TOPIC_IMU, connect
 from onnx_model import load_session, predict_prob
 
 CONFIG_PATH = ROOT / "config" / "user.json"
@@ -75,34 +79,62 @@ class EdgeNode:
 LABEL_TEXT = {0: "실험외", 1: "정상", 2: "동결", None: "-"}
 
 
+ACTION_TEXT = {"cue_start": "큐 시작", "cue_escalate": "큐 강화", "cue_stop": "큐 중지",
+               "notify_caregiver": "보호자 알림", "no_action": "행동 안 함"}
+
+
+def show_action(a: dict):
+    bpm = f" {a['bpm']}bpm" if a.get("bpm") else ""
+    vib = " +진동" if a.get("vibrate") else ""
+    print(f"  >>> [{ACTION_TEXT[a['action']]}{bpm}{vib}] {a['reason']}  (판단 {a.get('decide_ms', '-')}ms)",
+          flush=True)
+
+
 def main():
     node = EdgeNode()
+    agent = Agent()
     client = connect("edge")
+
+    def publish(topic: str, payload: dict):
+        if client.is_connected():          # 브로커가 끊겨도 판단은 계속하고, 발행만 건너뛴다
+            client.publish(topic, json.dumps(payload, ensure_ascii=False))
 
     def on_message(cl, userdata, msg):
         s = json.loads(msg.payload)
         if s.get("reset"):
             node.reset()
+            agent.reset(source=s.get("source"))
             print(f"--- 새 재생: {s.get('source')} ---", flush=True)
             return
         ev = node.on_sample(s)
         if ev is None:
             return
-        cl.publish(TOPIC_EVENT, json.dumps(ev))
+        publish(TOPIC_EVENT, ev)
         bar = "#" * int(ev["prob_avg"] * 20)
         print(f"t={ev['t']:7.2f}s  확률(평균)={ev['prob_avg']:.2f} {bar:<20} "
               f"{'동결!' if ev['fog'] else '     '}  걷기={'O' if ev['walking'] else 'X'} "
               f"걸음={ev['cadence'] or '-':>3}  추론 {ev['infer_ms']:.1f}ms  지연 {ev['latency_ms']}ms  "
-              f"정답={LABEL_TEXT[ev['truth']]}", flush=True)
+              f"정답={LABEL_TEXT[ev['truth']]}  상태={agent.state}", flush=True)
+        t1 = time.perf_counter()
+        actions = agent.step(ev)
+        decide_ms = round((time.perf_counter() - t1) * 1000, 2)
+        for a in actions:
+            a["decide_ms"] = decide_ms
+            publish(TOPIC_ACTION, a)
+            show_action(a)
 
     client.on_message = on_message
     client.subscribe(TOPIC_IMU)
-    print(f"엣지 노드 실행 중: {TOPIC_IMU} 구독, 임계값 {node.cfg['threshold']}  (Ctrl+C로 종료)", flush=True)
+    print(f"엣지 노드 + 에이전트 실행 중: {TOPIC_IMU} 구독, 임계값 {node.cfg['threshold']}  (Ctrl+C로 종료)",
+          flush=True)
     try:
         while True:
-            time.sleep(1)
+            time.sleep(0.5)
+            for a in agent.check_sensor():        # 큐가 켜진 채 센서 데이터가 끊기면 큐 중지
+                publish(TOPIC_ACTION, a)
+                show_action(a)
     except KeyboardInterrupt:
-        print("엣지 노드 종료")
+        print(f"엣지 노드 종료. 에이전트 요약: {agent.summary()}")
     finally:
         client.disconnect()
         client.loop_stop()
