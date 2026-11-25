@@ -8,3 +8,5 @@ paho-mqtt
 amqtt
 skl2onnx
 onnxruntime
+streamlit
+altair

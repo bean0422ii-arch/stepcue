@@ -85,7 +85,10 @@
 - [ ] API 키가 없거나 네트워크가 끊기면 현재 임계값 유지 (엣지 동작에는 영향 없음)
 
 ### 대시보드 · 시나리오
-- [ ] `dashboard/app.py` (Streamlit): 실시간 FoG 확률, 메트로놈 표시, 보호자 알림, 결정 로그, **"잘못된 큐였어요" 버튼, LLM 제안과 승인 버튼, 임계값 변경 기록표**
+- [x] `dashboard/app.py` (Streamlit): 실시간 FoG 확률, 메트로놈 표시, 보호자 알림, 결정 로그, **"잘못된 큐였어요" 버튼, LLM 제안과 승인 버튼, 임계값 변경 기록표**
+  - 기록 파일 형식과 읽기·쓰기는 `src/records.py`에 모음 (feedback.jsonl, threshold_changes.jsonl, pending_approval.json)
+  - 가상 사용자 토글: 큐가 켜졌다 꺼질 때까지 정답 레이블에 동결이 없으면 자동 피드백 (S01 재생으로 5건 기록 확인)
+  - 승인/거절 버튼은 `pending_approval.json`이 생겨야 보임 → llm_agent.py 만든 뒤 실제로 확인할 것
 - [ ] `scenarios/`에 테스트 시나리오 4개 만들기
   - [ ] ① 동결 → 큐 → 회복 → 중지 (감지에서 큐까지 시간 ms 기록)
   - [ ] ② 긴 동결 → 큐 강화 → 보호자 알림

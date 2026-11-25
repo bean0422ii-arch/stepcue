@@ -25,9 +25,7 @@ import time
 from collections import deque
 from pathlib import Path
 
-from data import ROOT
-
-DECISIONS_PATH = ROOT / "logs" / "decisions.jsonl"
+from records import DECISIONS_PATH
 
 IDLE, CUEING, ESCALATED = "IDLE", "CUEING", "ESCALATED"
 WALK_LOOKBACK = 5.0        # 초: 이 시간 안에 걷고 있었어야 큐를 시작
@@ -77,7 +75,7 @@ class Agent:
 
     def _act(self, ev: dict, action: str, reason: str, **extra) -> dict:
         """행동 하나를 만들고 기록한다. 대시보드로 보낼 메시지도 이것."""
-        rec = {"t": ev["t"], "action": action, **extra, "reason": reason, "state": self.state,
+        rec = {"t": ev["t"], "source": self.source, "action": action, **extra, "reason": reason, "state": self.state,
                "prob_avg": ev["prob_avg"], "threshold": ev["threshold"], "walking": ev["walking"],
                "rhythm": ev.get("rhythm"), "cadence": ev.get("cadence"),
                "truth": ev.get("truth")}           # 정답은 기록(평가)용, 판단에는 쓰지 않음
@@ -87,7 +85,7 @@ class Agent:
     def log_decision(self, rec: dict):
         if self.log_path is None:
             return
-        line = {"wall": round(time.time(), 3), "source": self.source, **rec}
+        line = {"wall": round(time.time(), 3), **rec}
         with open(self.log_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(line, ensure_ascii=False) + "\n")
 
@@ -157,7 +155,7 @@ class Agent:
         if self.state == IDLE or self.last_event_wall is None or now - self.last_event_wall < SENSOR_TIMEOUT:
             return []
         self.state = IDLE
-        rec = {"t": None, "action": "cue_stop", "reason": f"센서 데이터가 {now - self.last_event_wall:.1f}초 "
+        rec = {"t": None, "source": self.source, "action": "cue_stop", "reason": f"센서 데이터가 {now - self.last_event_wall:.1f}초 "
                "동안 안 들어옴 → 근거 없는 큐를 막기 위해 중지", "state": self.state}
         self.log_decision(rec)
         return [rec]
