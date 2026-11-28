@@ -108,7 +108,7 @@
 > 결과 기반 템포 학습(밴딧)은 넣지 않는다. 녹화 데이터에서는 큐 템포에 따라 회복 시간이 달라지지 않아 검증할 수 없기 때문이다.
 
 ## 6. 테스트 시나리오 (결정 로그로 검증)
-실행: `.venv\Scripts\python.exe scenariosun_scenarios.py` → [scenarios/results.md](../scenarios/results.md) (실제 엣지 코드로 재생, ①~③ 통과)
+실행: `.venv\Scripts\python.exe scenarios\run_scenarios.py` → [scenarios/results.md](../scenarios/results.md) (실제 엣지 코드로 재생, ①~③ 통과)
 
 | # | 재생 구간 | 기대 행동 | 통과 기준 | 결과 |
 |---|---|---|---|---|
