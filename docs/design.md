@@ -60,8 +60,15 @@
 | `get_feedback()` | "잘못된 큐였어요" 기록과 그때의 상황(확률, 걷기 리듬, 걸음 속도, 직전 행동) |
 | `simulate_threshold(thr)` | 저장된 확률로 재생해서 그 임계값의 감지율·오탐을 미리 계산 |
 | `set_threshold(thr, reason)` | `config/user.json` 변경 + `logs/threshold_changes.jsonl`에 기록 |
-| `request_approval(msg)` | 큰 변경은 대시보드에 승인 요청 |
+| `request_approval(thr, reason)` | 큰 변경은 대시보드에 승인 요청 (`logs/pending_approval.json`) |
 | `update_memory(note)` | 사용자별 패턴 메모를 `config/user_memory.json`에 저장 → 다음 실행 때 먼저 읽음 |
+
+자율 범위는 프롬프트가 아니라 코드(`Tools.set_threshold`)가 강제한다.
+- 스스로 적용: 0.6~0.9 안, 이번 실행 시작 값과 0.05 이내, **재생한 동결 감지율이 5%p 넘게 떨어지지 않을 때**
+- 그 밖: `request_approval`만 가능 (0.5~0.95 밖은 요청도 거부). 어떤 값이든 먼저 `simulate_threshold`로 재생해야 함
+- 감지율 조건을 넣은 이유: 0.8 → 0.85만으로 재생 감지율이 80.6% → 51.5%로 떨어진다. 0.01 단위 재생에서 0.81은 감지율 −3.0%p로 S04 큐가 10분당 4.93 → 0.42회
+- 변경 기록표의 "예상 효과"는 LLM이 쓴 숫자가 아니라 재생 결과를, "적용 후 효과"는 다음 세션의 큐·잘못된 큐 수를 코드가 센다
+- API 키·네트워크가 없으면 아무것도 바꾸지 않고 `logs/llm_runs.jsonl`에 `offline`으로 기록
 
 ## 4. Actions
 **빠른 층: 상태 머신 (세션 중, 0.5초마다, `src/agent.py`, 엣지 노드 프로세스 안에서 실행)**

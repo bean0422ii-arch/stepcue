@@ -57,14 +57,15 @@ def window_rhythm() -> pd.DataFrame:
     return out
 
 
-def run_agent(w: pd.DataFrame, require_walking: bool) -> tuple[pd.Series, pd.DataFrame]:
-    """윈도우마다 큐가 켜져 있는지(Series)와 모든 행동 목록을 돌려준다."""
+def run_agent(w: pd.DataFrame, require_walking: bool, threshold: float = THRESHOLD) -> tuple[pd.Series, pd.DataFrame]:
+    """윈도우마다 큐가 켜져 있는지(Series)와 모든 행동 목록을 돌려준다.
+    threshold는 LLM 에이전트의 simulate_threshold가 다른 임계값을 미리 재생해 볼 때 바꾼다."""
     cue_on = pd.Series(False, index=w.index)
     actions = []
     for (s, r), g in w.groupby(["subject", "run"], sort=False):
         agent = Agent(log_path=None, require_walking=require_walking)
         for i, row in zip(g.index, g.itertuples()):
-            ev = {"t": row.t_end, "prob_avg": row.avg, "threshold": THRESHOLD, "walking": bool(row.walking),
+            ev = {"t": row.t_end, "prob_avg": row.avg, "threshold": threshold, "walking": bool(row.walking),
                   "rhythm": row.rhythm, "cadence": None if pd.isna(row.cadence) else row.cadence}
             for a in agent.step(ev):
                 actions.append({"subject": s, "run": r, "truth_y": row.y, **a})

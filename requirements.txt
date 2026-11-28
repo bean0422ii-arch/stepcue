@@ -10,3 +10,4 @@ skl2onnx
 onnxruntime
 streamlit
 altair
+anthropic

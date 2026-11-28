@@ -32,6 +32,13 @@ def read_jsonl(path: Path) -> list[dict]:
         return [json.loads(line) for line in f if line.strip()]
 
 
+def write_jsonl(path: Path, recs: list[dict]):
+    """jsonl 전체를 다시 쓴다 (변경 기록표의 "적용 후 효과" 칸을 나중에 채울 때)."""
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in recs), encoding="utf-8")
+    tmp.replace(path)
+
+
 def read_json(path: Path) -> dict | None:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
