@@ -104,7 +104,7 @@ class Agent:
         if self.state == IDLE:
             if not high:
                 if ev["prob_avg"] >= ev["threshold"] - NEAR_MARGIN:
-                    return [self._act(ev, "no_action", f"확률 {ev['prob_avg']:.2f}로 올랐지만 임계값 "
+                    return [self._act(ev, "no_action", f"확률 {ev['prob_avg']:.3f}로 올랐지만 임계값 "
                                       f"{ev['threshold']} 미만 → 동결로 보지 않고 행동 안 함")]
                 self.counts["idle_low"] += 1
                 return []
@@ -136,7 +136,7 @@ class Agent:
         self.state, self.cue_t, self.below, self.notified = CUEING, t, 0, False
         self.bpm = self.base_bpm()
         known = "개인 걸음 속도" if self.cadences else "기본값(걸음 속도 아직 모름)"
-        acts = [self._act(ev, "cue_start", f"동결 확률 {ev['prob_avg']:.2f} ≥ {ev['threshold']} "
+        acts = [self._act(ev, "cue_start", f"동결 확률 {ev['prob_avg']:.3f} ≥ {ev['threshold']} "
                           f"→ 메트로놈 {self.bpm}bpm ({known})", bpm=self.bpm, vibrate=False)]
         self.cue_starts.append(t)
         while self.cue_starts and t - self.cue_starts[0] > NOTIFY_SPAN:
