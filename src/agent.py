@@ -36,6 +36,8 @@ NOTIFY_AFTER = 10.0        # 초: 큐 시작 후 이 시간까지 회복이 없�
 NOTIFY_COUNT, NOTIFY_SPAN = 3, 600.0   # 10분 안에 큐 3회째면 보호자 알림
 DEFAULT_BPM = 100          # 걸음 속도를 아직 모를 때의 템포 (환자별 중앙값 95~130, docs/cadence.md)
 CADENCE_HISTORY = 10       # 기본 템포 = 최근 걷기 이벤트 10개의 걸음 속도 중앙값
+TEMPO_RANGE = (80, 130)    # 메트로놈 템포 범위(bpm). 140 이상 "걸음 속도"의 77%가 동결 중·앞뒤 10초의 떨림·잔걸음이라
+                           # 그대로 따라가면 빠른 잔걸음을 부추김 (docs/cadence.md 14주차 확인)
 NEAR_MARGIN = 0.2          # 확률이 (임계값 − 이 값) 이상이면 "행동 안 함"도 이유와 함께 기록
 SENSOR_TIMEOUT = 2.0       # 초(실제 시간): 이벤트가 이만큼 안 오면 센서 끊김으로 보고 큐 중지
 
@@ -67,11 +69,11 @@ class Agent:
 
     # ---------- 도구 ----------
     def base_bpm(self) -> int:
-        """기본 템포 = 최근 걷기 중 걸음 속도의 중앙값 (모르면 100)."""
+        """기본 템포 = 최근 걷기 중 걸음 속도의 중앙값 (모르면 100), 80~130bpm으로 제한."""
         if not self.cadences:
             return DEFAULT_BPM
         c = sorted(self.cadences)
-        return int(round(c[len(c) // 2]))
+        return int(min(max(round(c[len(c) // 2]), TEMPO_RANGE[0]), TEMPO_RANGE[1]))
 
     def _act(self, ev: dict, action: str, reason: str, **extra) -> dict:
         """행동 하나를 만들고 기록한다. 대시보드로 보낼 메시지도 이것."""
